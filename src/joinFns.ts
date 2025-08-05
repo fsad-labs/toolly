@@ -3,105 +3,93 @@ type Identifier = {
 }
 
 type Status = {
-    isPending: boolean,
     isCompleted: boolean,
     isError: boolean,
-    executionMessage?: any,
+    message?: any,
+    originalError?: any,
 };
+
+type Middleware = (Status & Identifier);
 
 type JoinProps = {
     execute: () => Promise<void>,
-    abort: () => void
     status: Status
 }
 
+type FnType = (shared?: any) => void | Promise<void>;
+
 export const joinFns = ({
     fns,
-    args_shared,
-    timeout
+    args_shared
 }: {
-    fns: ((signal: AbortSignal, args_shared?: any) => void)[],
+    fns: FnType[],
     args_shared?: {},
-    timeout?: number
 }): JoinProps => {
 
-    let status: Status = {
-        isPending: true,
+    let status: Status & { fnsStatus: any[] } = {
         isCompleted: false,
         isError: false,
-        executionMessage: undefined
+        message: "All functions executed",
+        fnsStatus: [],
     }
 
-    let resultExecution: (Status & Identifier)[] = fns.map((_, index) => ({ index, isPending: true, isCompleted: false, isError: false }));
+    let resultExecution: Middleware[] = fns.map((_, index) => ({
+        index,
+        isCompleted: false,
+        isError: false,
+        message: "",
+        originalError: undefined,
+    }));
 
-    let abortMessage: string;
-    let abortContoller = new AbortController();
-    let signalGlobal = abortContoller.signal;
+    status.fnsStatus = resultExecution;
 
-    if (timeout) {
-        setTimeout(() => { abortContoller.abort() }, timeout);
-    }
+    let abortMessage: string = "Operation was cancelled";
+    const executionErrorMessage: string = "An error occurred during execution";
 
+    const wrapFn = (fn: FnType, indexFn: number) =>
+        new Promise<string>(async (resolve, reject) => {
+            const middleware = resultExecution.find(md => md.index == indexFn)!;
 
-    const wrapFn = (fn: (signal: AbortSignal, args_shared?: any) => void, indexFn: number) =>
-        new Promise<void>(async (resolve, reject) => {
-            console.log(`-------------------- Executing middleware ${indexFn + 1} of ${fns.length} -----------------------------`);
+            (async () => {
+                try {
+                    const fnResult = fn(args_shared);
+                    await Promise.resolve(fnResult);
 
-            const middleware = resultExecution.find(md => md.index == indexFn) as (Status & Identifier);
+                    middleware.isCompleted = true;
 
-            if (signalGlobal.aborted) throw Error(abortMessage); // before started
-            const aborHandler = () => reject(abortMessage); // when abrort signal is executed
-            signalGlobal.addEventListener("abort", aborHandler); // abort handler
+                    resolve(JSON.stringify(middleware));
+                } catch (error: any) {
+                    middleware.isError = true;
+                    middleware.message = error?.message || executionErrorMessage;
+                    middleware.originalError = error;
 
-            try {
-                //manage async and async functions
-                const isFn = typeof fn === "function";
-                const fnPromise = isFn ? fn : () => fn;
-
-                await fnPromise(signalGlobal, args_shared);
-                resolve()
-            }
-            catch (error) {
-                middleware.isError = true;
-                middleware.executionMessage = error;
-                signalGlobal.removeEventListener("abort", aborHandler); // remove abort handler
-                reject();
-            }
-            finally {
-                middleware.isPending = false;
-                middleware.isCompleted = true;
-            }
+                    reject(JSON.stringify(middleware));
+                }
+            })();
         });
+
 
 
     const execute = async () => {
         try {
             const wrappedFns = fns.map((fn, indexFn) => wrapFn(fn, indexFn));
-            await Promise.allSettled(wrappedFns);
-        }
-        catch (error) {
-            status.isError = true;
-            status.executionMessage = error;
-        }
-        finally {
+            const result = await Promise.allSettled(wrappedFns);
+
+            const results = result.map(r => r.status === "fulfilled" ? JSON.parse(r.value as string) : JSON.parse(r.reason as string));
+
+            status.fnsStatus = results;
+
             status.isCompleted = true;
-            status.isPending = false;
         }
-    }
-
-    const abort = (message?: string) => {
-        abortMessage = message || "Operation was cancelled";
-        status.isCompleted = true;
-        status.isPending = false;
-        status.isError = false;
-        status.executionMessage = abortMessage;
-
-        abortContoller.abort();
+        catch (error: any) {
+            status.isError = true;
+            status.message = error?.message || "An error occurred during execution";
+            status.originalError = error;
+        }
     }
 
     return {
         execute,
-        abort,
         status
     };
 }

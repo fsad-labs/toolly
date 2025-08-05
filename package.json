@@ -8,13 +8,18 @@
     "tools",
     "utils",
     "utility",
-    "functions"
+    "functions",
+    "retry"
   ],
   "scripts": {
     "build": "tsup ./index.ts --format esm,cjs --dts --out-dir dist",
     "dev": "tsup ./index.ts --watch",
     "start": "npx tsc index.ts && node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fsad-labs/toolly.git"
   },
   "main": "dist/index.cjs",
   "module": "dist/index.js",
