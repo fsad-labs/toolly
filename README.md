@@ -67,13 +67,13 @@ Join your functions in a container, share args and control the execution.
 | `fns` | `functions` | **Required**. Array of functions that will be wrapped to be executes |
 | `args_shared` | `number` | **optional**. args to be passed into all functions |
 
-| Result (object) | Type     | Description                |
-| :-------- | :------- | :------------------------- |
-|`isCompleted`|`boolean`| status of the container, true when all functions were executed
-|`isError`|`boolean`| status error, true if joinFns throw error
-|`message`|`string`| original message error caught
-|`originalError`|`any`| original error caught
-
+| Result (object) | SubProp | Type     | Description                |
+| :-------- | :-------- | :------- | :------------------------- |
+| `execute`| | `function` | execute function
+| `status` | `isCompleted`|`boolean`| status of the container, true when all functions were executed
+| |`isError`|`boolean`| status error, true if joinFns throw error
+| |`message`|`string`| original message error caught
+| |`fnsStatus`|`any`| status of the all functions
 
 ## Usage/Examples
 
