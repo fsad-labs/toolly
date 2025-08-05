@@ -7,7 +7,7 @@ A lightweight wrappers around funtions or promises that simplifies:
 ## Install
 
 ```bash
-npm i @fsad-labs/tooly
+npm i @fsad-labs/toolly
 ```
 ## Usage
 ## API Reference
