@@ -34,9 +34,18 @@ Retry executing your functions as many times as you want before displaying the e
 | `delay` | `number` | **optional**. ms to wait before continue with the next execution  **by default** 500 ms|
 | `fnError` | `function` | **optional**. async function to catch the error and customize it. **Must return a value** |
 
+Result when retryFn is OK
+
 | Result (object) | Type     | Description                |
 | :-------- | :------- | :------------------------- |
-|`success`|`boolean`| status of the execution
+|`success`|`boolean`| status of the execution **True**
+|`result`|`any`| result of your fn
+
+Result when retryFn throw an Error
+
+| Result (object) | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+|`success`|`boolean`| status of the execution **False**
 |`message`|`string`| message of the error **Customizable**
 |`code`|`string`| code error "RETRY_ERROR" **Customizable**
 |`originalError`|`any`| original error caught
