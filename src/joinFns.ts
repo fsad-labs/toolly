@@ -75,7 +75,7 @@ export const joinFns = ({
             const wrappedFns = fns.map((fn, indexFn) => wrapFn(fn, indexFn));
             const result = await Promise.allSettled(wrappedFns);
 
-            const results = result.map(r => r.status === "fulfilled" ? JSON.parse(r.value as string) : JSON.parse(r.reason as string));
+            const results = result.map((r: PromiseSettledResult<string>) => r.status === "fulfilled" ? JSON.parse(r.value as string) : JSON.parse(r.reason as string));
 
             status.fnsStatus = results;
 
