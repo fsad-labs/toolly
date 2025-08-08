@@ -1,7 +1,7 @@
 {
   "name": "@fsad-labs/toolly",
   "author": "fullstack-ad",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Tools functions",
   "keywords": [
     "tool",
@@ -12,10 +12,10 @@
     "retry"
   ],
   "scripts": {
-    "build": "tsup ./index.ts --format esm,cjs --dts --out-dir dist",
+    "build": "tsup --clean",
     "dev": "tsup ./index.ts --watch",
     "start": "npx tsc index.ts && node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "check-size": "node check/check-gzip-size.js"
   },
   "repository": {
     "type": "git",
