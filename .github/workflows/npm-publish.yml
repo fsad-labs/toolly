@@ -18,6 +18,8 @@ jobs:
           node-version: 20
       - run: npm install
       - run: npm run build
+      - run: npm run check-size
+      - run: npm pack --dry-run
 
   publish-npm:
     needs: build
